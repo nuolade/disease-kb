@@ -28,8 +28,8 @@ diseaseKB
 ### 处理
   对爬取的数据进行预处理，筛选适合做知识图谱知识存储的相关信息。最后从数据库中提取出结构化的文件medical.json,用于搭建知识图谱。数据大致信息如下：
   <p align="center">
-	<img src=./pic/json.png alt="Sample"  width="300">
-	<p align="center">
+	<img src=./pic/json.png alt="Sample"  width="500">
+	<p align="left">
 		<em> </em>
 	</p>
 </p>
