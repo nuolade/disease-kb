@@ -10,16 +10,15 @@
 ## 文件介绍
 ```shell
 diseaseKB
-├──prepare_data
-* prepare_data
-- max_cut.py 根据给定的词典对文本进行前向、后向和双向最大匹配
-- data_spider.py 爬取数据
-- build_data.py 数据处理到数据库
-* dict 各种类别的词典
-* data
-- medical.json 整理后的疾病医疗知识
-* build_medicalgraph.py
-* build_json.py
+├── data
+│   └── medical.json 结构化疾病医疗知识
+├── prepare_data
+│   ├── build_data.py 数据处理到数据库
+│   ├── data_spider.py 爬取数据
+│   └── max_cut.py 根据给定的词典对文本进行前向、后向和双向最大匹配
+├── dict 各种类别的词典
+├── build_medicalgraph.py 利用结构化的数据建立Neo4j知识图谱 
+└── build_json.py
 ```
 
 
