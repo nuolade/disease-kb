@@ -7,9 +7,15 @@
  
 **对获得的医疗数据进行整理，使其可直接用于知识图谱的搭建（Neo4j），文件处理成json格式。文件分为实体（实体基本信息）、关系（不同实体间关系）和属性（实体的属性信息）三个类别。**
 ## 文件介绍
-max_cut.py 根据给定的词典对文本进行前向、后向和双向最大匹配
-data_spider.py 爬取数据
-build_data.py 数据处理到数据库
+* prepare_data
+- max_cut.py 根据给定的词典对文本进行前向、后向和双向最大匹配
+- data_spider.py 爬取数据
+- build_data.py 数据处理到数据库
+* dict 各种类别的词典
+* data
+- medical.json 整理后的疾病医疗知识
+* build_medicalgraph.py
+* build_json.py
 
 
 ## 数据获取与处理
