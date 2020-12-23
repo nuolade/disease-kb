@@ -53,7 +53,7 @@ class CrimeSpider:
                 data['food_info'] = self.food_spider(food_url)
                 data['drug_info'] = self.drug_spider(drug_url)
                 print(page, basic_url)
-                self.col.insert(data)
+                self.col.insert_one(data)
 
             except Exception as e:
                 print(e, page)
@@ -153,11 +153,12 @@ class CrimeSpider:
                 data = {}
                 data['url']= url
                 data['html'] = html
-                self.db['jc'].insert(data)
+                self.db['jc'].insert_one(data)
                 print(url)
             except Exception as e:
                 print(e)
 
 
 handler = CrimeSpider()
+handler.spider_main()
 handler.inspect_crawl()

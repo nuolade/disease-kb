@@ -14,7 +14,7 @@ class MedicalGraph:
         first_words = [i.strip() for i in open(os.path.join(cur_dir, 'first_name.txt'))]
         alphabets = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y', 'z']
         nums = ['1','2','3','4','5','6','7','8','9','0']
-        self.stop_words = first_words + alphabets + nums
+        self.stop_words =  alphabets + nums
         self.key_dict = {
             '医保疾病' : 'yibao_status',
             "患病比例" : "get_prob",
@@ -95,6 +95,7 @@ class MedicalGraph:
                 attr_en = self.key_dict.get(attr)
                 if attr_en:
                     data_modify[attr_en] = value
+
                 if attr_en in ['yibao_status', 'get_prob', 'easy_get', 'get_way', "cure_lasttime", "cured_prob"]:
                     data_modify[attr_en] = value.replace(' ','').replace('\t','')
                 elif attr_en in ['cure_department', 'cure_way', 'common_drug']:
@@ -109,9 +110,7 @@ class MedicalGraph:
                 print(count)
             except Exception as e:
                 print(e)
-
         return
-
 
     def get_inspect(self, url):
         res = self.db['jc'].find_one({'url':url})
@@ -120,16 +119,7 @@ class MedicalGraph:
         else:
             return res['name']
 
-    def modify_jc(self):
-        for item in self.db['jc'].find():
-            url = item['url']
-            content = item['html']
-            selector = etree.HTML(content)
-            name = selector.xpath('//title/text()')[0].split('结果分析')[0]
-            desc = selector.xpath('//meta[@name="description"]/@content')[0].replace('\r\n\t','')
-            self.db['jc'].update({'url':url}, {'$set':{'name':name, 'desc':desc}})
-
-
 
 if __name__ == '__main__':
     handler = MedicalGraph()
+    handler.collect_medical()

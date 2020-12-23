@@ -5,7 +5,7 @@ import os
 import json
 # from py2neo import Graph,Node
 
-class MedicalGraph:
+class MedicalToJson:
     def __init__(self):
         cur_dir = '/'.join(os.path.abspath(__file__).split('/')[:-1])
         self.data_path = os.path.join(cur_dir, 'data/medical.json')
@@ -20,6 +20,7 @@ class MedicalGraph:
         producers = [] #药品大类
         diseases = [] #疾病
         symptoms = []#症状
+        cures = []  # 治疗方法
 
         disease_infos = []#疾病信息
 
@@ -32,17 +33,17 @@ class MedicalGraph:
         rels_recommanddrug = [] # 疾病－热门药品关系
         rels_check = [] # 疾病－检查关系
         rels_drug_producer = [] # 厂商－药物关系
+        rels_cureway = []  # 疾病-治疗方式关系
 
         rels_symptom = [] #疾病症状关系
         rels_acompany = [] # 疾病并发关系
         rels_category = [] #　疾病与科室之间的关系
 
-
         count = 0
-        for data in open(self.data_path,'rb'):
+        for data in open(self.data_path, 'rb'):
             disease_dict = {}
             count += 1
-            print(count)
+            # print(count)
             data_json = json.loads(data)
             disease = data_json['name']
             disease_dict['name'] = disease
@@ -84,20 +85,21 @@ class MedicalGraph:
             if 'cure_department' in data_json:
                 cure_department = data_json['cure_department']
                 if len(cure_department) == 1:
-                     rels_category.append([disease, cure_department[0]])
+                    rels_category.append([disease, cure_department[0]])
                 if len(cure_department) == 2:
                     big = cure_department[0]
                     small = cure_department[1]
                     rels_department.append([small, big])
                     rels_category.append([disease, small])
-
-                disease_dict['cure_department'] = cure_department
                 departments += cure_department
 
-            if 'cure_way' in data_json:
-                disease_dict['cure_way'] = data_json['cure_way']
+            if 'cure_way' in data_json:  # cure_way 实体 ??
+                cure_way = data_json['cure_way']
+                cures += cure_way
+                for cure in cure_way:
+                    rels_cureway.append([disease, cure])
 
-            if  'cure_lasttime' in data_json:
+            if 'cure_lasttime' in data_json:
                 disease_dict['cure_lasttime'] = data_json['cure_lasttime']
 
             if 'cured_prob' in data_json:
@@ -119,13 +121,13 @@ class MedicalGraph:
                 not_eat = data_json['not_eat']
                 for _not in not_eat:
                     rels_noteat.append([disease, _not])
-
                 foods += not_eat
+
                 do_eat = data_json['do_eat']
                 for _do in do_eat:
                     rels_doeat.append([disease, _do])
-
                 foods += do_eat
+
                 recommand_eat = data_json['recommand_eat']
 
                 for _recommand in recommand_eat:
@@ -143,147 +145,125 @@ class MedicalGraph:
                 rels_drug_producer += [[i.split('(')[0], i.split('(')[-1].replace(')', '')] for i in drug_detail]
                 producers += producer
             disease_infos.append(disease_dict)
-        return set(drugs), set(foods), set(checks), set(departments), set(producers), set(symptoms), set(diseases), disease_infos,\
-               rels_check, rels_recommandeat, rels_noteat, rels_doeat, rels_department, rels_commonddrug, rels_drug_producer, rels_recommanddrug,\
-               rels_symptom, rels_acompany, rels_category
+        return set(drugs), set(foods), set(checks), set(departments), set(producers), set(symptoms), set(diseases), set(
+            cures), disease_infos, \
+               rels_check, rels_recommandeat, rels_noteat, rels_doeat, rels_department, rels_commonddrug, rels_drug_producer, rels_recommanddrug, \
+               rels_symptom, rels_acompany, rels_category, rels_cureway
 
-    '''建立节点'''
-    def create_node(self, label, nodes):
+    def write_node_json(self, label, nodes):
         count = 0
         en_list=[]
-        for node_name in nodes: #将结点集中的结点设置为
+        for node in nodes: #将结点集中的结点设置为
             item={}
-            item[label]=node_name
-            # node = Node(label, name=node_name)
-            # self.g.create(node)
+            item['label']=label
+            if label == 'Diseases':
+                item['name'] = node['name']
+                item['desc'] = node['desc']
+                item['prevent'] = node['prevent']
+                item['cause'] = node['cause']
+                item['easy_get'] = node['easy_get']
+                item['cure_lasttime'] = node['cure_lasttime']
+                item['cured_prob'] = node['cured_prob']
+            else:
+                item['name'] = node
             count += 1
-            print(count, len(nodes))
+            # print(count, len(nodes))
             en_list.append(item)
+        print(label,count)
         return en_list
 
-    '''创建知识图谱实体节点类型schema'''
-    def create_graphnodes(self):
-        Drugs, Foods, Checks, Departments, Producers, Symptoms, Diseases, disease_infos,rels_check, \
+    def create_nodes_json(self):
+        Drugs, Foods, Checks, Departments, Producers, Symptoms, Diseases,Cures,disease_infos,rels_check, \
         rels_recommandeat, rels_noteat, rels_doeat, rels_department, rels_commonddrug, rels_drug_producer, \
-        rels_recommanddrug,rels_symptom, rels_acompany, rels_category = self.read_nodes()
+        rels_recommanddrug,rels_symptom, rels_acompany, rels_category,rels_cureway = self.read_nodes()
         entities = []
-        l=self.create_node('Diseases',Diseases)
+        l=self.write_node_json('Disease',disease_infos)
         entities.extend(l)
-        l=self.create_node('Drug', Drugs)
+        l=self.write_node_json('Drug', Drugs)
         entities.extend(l)
-        print(len(Drugs))
-        l=self.create_node('Food', Foods)
+        l=self.write_node_json('Food', Foods)
         entities.extend(l)
-        print(len(Foods))
-        l=self.create_node('Check', Checks)
+        l=self.write_node_json('Check', Checks)
         entities.extend(l)
-        print(len(Checks))
-        l=self.create_node('Department', Departments)
+        l=self.write_node_json('Department', Departments)
         entities.extend(l)
-        print(len(Departments))
-        l=self.create_node('Producer', Producers)
+        l=self.write_node_json('Producer', Producers)
         entities.extend(l)
-        print(len(Producers))
-        l=self.create_node('Symptom', Symptoms)
+        l=self.write_node_json('Symptom', Symptoms)
+        entities.extend(l)
+        l = self.write_node_json('Cure', Cures)
         entities.extend(l)
         filename='newdata/entities.json'
         json.dump(entities, open(filename, 'w', encoding='utf-8'), indent=4, ensure_ascii=False)
         return
 
-
-    '''创建实体关系边'''
-    def create_graphrels(self):
-        Drugs, Foods, Checks, Departments, Producers, Symptoms, Diseases, disease_infos, rels_check,\
+    def create_rels_json(self):
+        Drugs, Foods, Checks, Departments, Producers, Symptoms, Diseases, Cures,disease_infos, rels_check,\
         rels_recommandeat, rels_noteat, rels_doeat, rels_department, rels_commonddrug, \
-        rels_drug_producer, rels_recommanddrug,rels_symptom, rels_acompany, rels_category = self.read_nodes()
-        self.create_relationship('Disease', 'Food', rels_recommandeat, 'recommand_eat', '推荐食谱')
-        self.create_relationship('Disease', 'Food', rels_noteat, 'no_eat', '忌吃')
-        self.create_relationship('Disease', 'Food', rels_doeat, 'do_eat', '宜吃')
-        self.create_relationship2('Department', 'Department', rels_department, 'belongs_to', '属于','Disease', 'Department', rels_category, 'belongs_to', '所属科室')
-        self.create_relationship('Disease', 'Drug', rels_commonddrug, 'common_drug', '常用药品')
-        self.create_relationship('Producer', 'Drug', rels_drug_producer, 'drugs_of', '生产药品')
-        self.create_relationship('Disease', 'Drug', rels_recommanddrug, 'recommand_drug', '好评药品')
-        self.create_relationship('Disease', 'Check', rels_check, 'need_check', '诊断检查')
-        self.create_relationship('Disease', 'Symptom', rels_symptom, 'has_symptom', '症状')
-        self.create_relationship('Disease', 'Disease', rels_acompany, 'acompany_with', '并发症')
+        rels_drug_producer, rels_recommanddrug,rels_symptom, rels_acompany, rels_category, rels_cureway = self.read_nodes()
+        relations=[]
+        rel_set=self.write_rel_json('Disease', 'Food', rels_recommandeat, 'recommand_eat', '推荐食谱')
+        relations.append(rel_set)
+        rel_set=self.write_rel_json('Disease', 'Food', rels_noteat, 'no_eat', '忌吃')
+        relations.append(rel_set)
+        rel_set=self.write_rel_json('Disease', 'Food', rels_doeat, 'do_eat', '宜吃')
+        relations.append(rel_set)
+        rel_set=self.write_rel_json('Department', 'Department', rels_department, 'belongs_to', '属于','_0')
+        relations.append(rel_set)
+        rel_set=self.write_rel_json('Disease', 'Department', rels_category, 'belongs_to', '所属科室','_1')
+        relations.append(rel_set)
+        rel_set=self.write_rel_json('Disease', 'Drug', rels_commonddrug, 'common_drug', '常用药品')
+        relations.append(rel_set)
+        rel_set=self.write_rel_json('Producer', 'Drug', rels_drug_producer, 'drugs_of', '生产药品')
+        relations.append(rel_set)
+        rel_set=self.write_rel_json('Disease', 'Drug', rels_recommanddrug, 'recommand_drug', '好评药品')
+        relations.append(rel_set)
+        rel_set=self.write_rel_json('Disease', 'Check', rels_check, 'need_check', '诊断检查')
+        relations.append(rel_set)
+        rel_set=self.write_rel_json('Disease', 'Symptom', rels_symptom, 'has_symptom', '症状')
+        relations.append(rel_set)
+        rel_set=self.write_rel_json('Disease', 'Disease', rels_acompany, 'acompany_with', '并发症')
+        relations.append(rel_set)
+        rel_set=self.write_rel_json('Disease','Cure',rels_cureway,'cure_way','治疗方法')
+        relations.append(rel_set)
+        filename = 'newdata/relations.json'
+        json.dump(relations, open(filename, 'w', encoding='utf-8'), indent=4, ensure_ascii=False)
 
     '''创建实体关联边'''
-    def create_relationship(self, start_node, end_node, edges, rel_type, rel_name):
+    def write_rel_json(self, start_node, end_node, edges, rel_type, rel_name,postfix=None):
         set_edges = []
         for edge in edges:
             set_edges.append('###'.join(edge))
         all = len(set(set_edges))
-        filename='newdata/'+rel_type+'.json'
+        if postfix is None:
+            filename='newdata/'+rel_type+'.json'
+        else:
+            filename = 'newdata/' + rel_type + postfix+'.json'
+
+        rel_set={}
+        rel_set['start_entity_type'] = start_node
+        rel_set['end_entity_type'] = end_node
+        rel_set['rel_type'] = rel_type
+        rel_set['rel_name'] = rel_name
         rels=[]
         count = 0
-
         for edge in set(set_edges):
             edge = edge.split('###')
             p = edge[0]
             q = edge[1]
             item={}
-            item['start_entity_type']=start_node
-            item['end_entity_type']=end_node
             item['start_entity_name']=p
             item['end_entity_name']=q
-            item['rel_type']=rel_type
-            item['rel_name']=rel_name
             count += 1
-            print(rel_type, count, all)
             rels.append(item)
+        rel_set['rels']=rels
+        print(rel_type,all)
+        # json.dump(rel_set,open(filename,'w',encoding='utf-8'),indent=4,ensure_ascii=False)
+        return rel_set
 
-        json.dump(rels,open(filename,'w',encoding='utf-8'),indent=4,ensure_ascii=False)
-        return
-
-    def create_relationship2(self, start_node, end_node, edges, rel_type, rel_name, start_node2, end_node2, edges2, rel_type2, rel_name2):
-        filename = 'newdata/' + rel_type + '.json'
-        rels = []
-
-        set_edges = []
-        for edge in edges:
-            set_edges.append('###'.join(edge))
-        all = len(set(set_edges))
-        count = 0
-        for edge in set(set_edges):
-            edge = edge.split('###')
-            p = edge[0]
-            q = edge[1]
-            item={}
-            item['start_entity_type']=start_node
-            item['end_entity_type']=end_node
-            item['start_entity_name']=p
-            item['end_entity_name']=q
-            item['rel_type']=rel_type
-            item['rel_name']=rel_name
-            count += 1
-            print(rel_type, count, all)
-            rels.append(item)
-
-        set_edges = []
-        for edge in edges2:
-            set_edges.append('###'.join(edge))
-        all = len(set(set_edges))
-        count = 0
-        for edge in set(set_edges):
-            edge = edge.split('###')
-            p = edge[0]
-            q = edge[1]
-            item = {}
-            item['start_entity_type'] = start_node2
-            item['end_entity_type'] = end_node2
-            item['start_entity_name'] = p
-            item['end_entity_name'] = q
-            item['rel_type'] = rel_type2
-            item['rel_name'] = rel_name2
-            count += 1
-            print(rel_type2, count, all)
-            rels.append(item)
-
-        json.dump(rels,open(filename,'w',encoding='utf-8'),indent=4,ensure_ascii=False)
-        return
 
 if __name__ == '__main__':
-    handler = MedicalGraph()
-    handler.create_graphnodes()
-    handler.create_graphrels()
+    handler = MedicalToJson()
+    handler.create_nodes_json()
+    handler.create_rels_json()
 
