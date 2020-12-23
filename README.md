@@ -21,8 +21,11 @@ diseaseKB
 ├── build_medicalgraph_from_json.py 利用实体和关系json文件据建立知识图谱 
 └── build_json.py 利用爬取的数据生成提炼的实体和关系json文件
 ```
-
-
+### 使用方法
+  1. 数据爬取与处理： data_spider.py -> build_data.py
+  2. 知识图谱搭建（任意方式即可）： 
+     - 原始文件搭建知识图谱： build_medicalgraph.py
+     - 从生成实体关系文件到搭建知识图谱： build_json.py -> build_medicalgraph_from_json.py
 ## 数据获取与处理
 ### 获取
   数据从“寻医问药”医疗网站上爬取原始数据，将其保存到本地数据库（mongodb)中。爬取数据以疾病为单位，获得其各方面的信息，如：成因、症状、服用药物等。爬取时，根据疾病id爬取不同的网站。除疾病外，还爬取了疾病监测的相关数据，也将其保存到数据库中。
