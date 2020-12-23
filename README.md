@@ -92,9 +92,38 @@ diseaseKB
   生成的实体和关系的json文件分别为entities.json和relations.json。
   1. entities.json文件说明
   - 此文件包含8类实体，其中疾病（‘Disease’）相较其他实体有额外的属性，而其他类实体无其他属性，如下图。
-  
+  <p align="left">
+	<img src=./pic/ent0.PNG alt="Sample"  width="400">
+	<p align="center">
+		<em> </em>
+	</p>
+</p>
+  <p align="left">
+	<img src=./pic/ent1.PNG alt="Sample"  width="250">
+	<p align="center">
+		<em> </em>
+	</p>
+</p>
   2. relations.json文件说明
   - 此文件包含11类关系，每一类关系为一个字典，信息包括开始实体类型、结束实体类型、关系类型、关系名称、关系集合，关系集合中包括了该类关系的所有关系，信息包括开始实体名称与结束实体名称，如下图。
+    <p align="left">
+	<img src=./pic/rel0.PNG alt="Sample"  width="350">
+	<p align="center">
+		<em> </em>
+	</p>
+</p>
+    <p align="left">
+	<img src=./pic/rel1.PNG alt="Sample"  width="450">
+	<p align="center">
+		<em> </em>
+	</p>
+</p>
 
 ### 图谱效果
   实现了Neo4j上的知识图谱，下图为某一检索效果：
+    <p align="left">
+	<img src=./pic/graph.png alt="Sample"  width="500">
+	<p align="center">
+		<em> </em>
+	</p>
+</p>
