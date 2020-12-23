@@ -6,7 +6,7 @@
  
 **本项目借鉴前人智慧，但基于其爬取数据的方法对数据进行了更加充分的使用，https://github.com/liuhuanyong/QASystemOnMedicalKG。**
  
-**对获得的医疗数据进行整理，使其可直接用于知识图谱的搭建（Neo4j），文件处理成json格式。文件分为实体（实体基本信息）、关系（不同实体间关系）和属性（实体的属性信息）三个类别。**
+**对获得的医疗数据进行整理，使其可直接用于知识图谱的搭建（Neo4j），文件处理成json格式。文件分为实体（实体基本信息与属性）和关系（不同实体间关系）两个类别。**
 ## 文件介绍
 ```shell
 diseaseKB
@@ -18,7 +18,8 @@ diseaseKB
 │   └── max_cut.py 根据给定的词典对文本进行前向、后向和双向最大匹配
 ├── dict 各种类别的词典
 ├── build_medicalgraph.py 利用结构化的数据建立Neo4j知识图谱 
-└── build_json.py
+├── build_medicalgraph_from_json.py 利用实体和关系json文件据建立知识图谱 
+└── build_json.py 利用爬取的数据生成提炼的实体和关系json文件
 ```
 
 
